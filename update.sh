@@ -14,7 +14,7 @@ if ! unxz $tmp.$ext; then
     echo "Failed to unzip setup"
     exit 1
 fi
-if diff -q $tmp $ini 2>/dev/null; then
+if diff -q $tmp $ini 1>/dev/null 2>&1; then
     echo "No change to setup"
     rm -f $tmp
     exit 0
@@ -31,5 +31,6 @@ while [[ ${1:0:1} == - ]]; do
         exit 1
     fi
 done
+echo "Updating setup ..."
 cp -p $ini $tmp.old
 cp -p $tmp $ini

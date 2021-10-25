@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
+import sys
+
+def eprint(*args,**kwargs):
+    print(*args,file=sys.stderr,**kwargs)
 
 class PackageData:
     def __init__(self,pkg):
         self.pkg = pkg
         self.file = None
         self.deps = set()
+        self.dep2 = set()
 
 def ST(fp):
     ST.pkg = {}
@@ -41,21 +46,25 @@ def ST(fp):
             data.size = s
             data.hash = h
         elif n == 'requires':
-            data.deps |= set(v.split())
+            data.deps = set(v.split())
         elif n == 'depends2':
-            data.deps |= set(csplit(v))
+            data.dep2 = set(csplit(v))
         elif n == 'provides':
             for p in csplit(v):
                 a = ST.alt.get(p,[])
                 if not a: ST.alt[p] = a
                 a.append(data)
+    for p,d in ST.pkg.items():
+        if not d.dep2: continue
+        d.deps = d.dep2
+        d.dep2 = None
     return 0
 
 # Known Bugs:
 DEP_BUG = {
-    'tzcode' : set(),
+    'libglib2.0_0' : set(['libpcre1']),
     'terminfo' : set(),
-    'terminfo-extra' : set(),
+    'tzcode' : set(['tzdata']),
 }
 
 def dependencies(names,hashs,order,d):
@@ -68,7 +77,7 @@ def dependencies(names,hashs,order,d):
         try: l = c.level + 1
         except:
             l = 0
-            print('Cyclic dependency:',d.pkg)
+            eprint('Cyclic dependency:',d.pkg)
         if l > level: level = l
     d.level = level
     return 0
@@ -79,7 +88,7 @@ def addToList(names,hashs,order,pkg):
     d = ST.pkg.get(pkg)
     names[pkg] = d
     if not d or not d.hash:
-        print('No match for:',pkg)
+        eprint('No match for:',pkg)
         return None
     h = hashs.get(d.hash)
     if h: return h
@@ -108,7 +117,10 @@ def update_db(fin,fout,pkgs):
 
 def do_install(args):
     names,hashs,order = {},{},[]
-    for p in args.pkg:
+    try: pkgs = open(args.lst).read().splitlines()
+    except: pkgs = []
+    pkgs += args.pkg
+    for p in pkgs:
         if not addToList(names,hashs,order,p):
             return -1
     lines = []
@@ -133,7 +145,7 @@ def provides(pkgs):
         n = len(m)
         if n != 1:
             e = 'More then one' if n > 1 else 'No'
-            print('%s provider for: %s'%(e,p))
+            eprint('%s provider for: %s'%(e,p))
             return -1
         v = sorted(v.items())
         d = v[-1][1]
@@ -157,5 +169,6 @@ if __name__ == '__main__':
       default='/etc/setup/installed.csv')
     a('-o','--odb',type=str,help='Updated Packages',
       default='/tmp/installed.csv')
+    a('-f','--lst',type=str,help='List',default=None)
     a('-u','--upd',help='Update',default=False,action='store_true')
     exit(run(parser.parse_args()))
