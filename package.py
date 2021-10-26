@@ -63,16 +63,17 @@ def ST(fp):
 # Known Bugs:
 DEP_BUG = {
     'libglib2.0_0' : set(['libpcre1']),
+    'perl_base' : set(['libcrypt2']),
     'terminfo' : set(),
     'tzcode' : set(['tzdata']),
 }
 
-def dependencies(names,hashs,order,d):
+def dependencies(names,order,d):
     bug = DEP_BUG.get(d.pkg)
     if bug is not None: d.deps = bug
     level = 0
     for p in d.deps:
-        c = addToList(names,hashs,order,p)
+        c = addToList(names,order,p)
         if not c: return None
         try: l = c.level + 1
         except:
@@ -82,18 +83,18 @@ def dependencies(names,hashs,order,d):
     d.level = level
     return 0
 
-def addToList(names,hashs,order,pkg):
+def addToList(names,order,pkg):
     d = names.get(pkg)
     if d: return d
     d = ST.pkg.get(pkg)
     names[pkg] = d
+    if pkg != d.pkg:
+        if d.pkg in names: return d
+        names[d.pkg] = d
     if not d or not d.hash:
         eprint('No match for:',pkg)
         return None
-    h = hashs.get(d.hash)
-    if h: return h
-    hashs[d.hash] = d
-    dependencies(names,hashs,order,d)
+    dependencies(names,order,d)
     order.append(d)
     return d
 
@@ -116,12 +117,12 @@ def update_db(fin,fout,pkgs):
     return pks
 
 def do_install(args):
-    names,hashs,order = {},{},[]
+    names,order = {},[]
     try: pkgs = open(args.lst).read().splitlines()
     except: pkgs = []
     pkgs += args.pkg
     for p in pkgs:
-        if not addToList(names,hashs,order,p):
+        if not addToList(names,order,p):
             return -1
     lines = []
     if args.upd:
