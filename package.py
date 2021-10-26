@@ -63,7 +63,11 @@ def ST(fp):
 # Known Bugs:
 DEP_BUG = {
     'libglib2.0_0' : set(['libpcre1']),
+    'libsasl2_3': set(['libcrypt2','libdb5.3','libgssapi_krb5_2',
+                       'libkrb5_3','libssl1.1']),
     'perl_base' : set(['libcrypt2']),
+    'python38-pip' : set(),
+    'python38-setuptools' : set(),
     'terminfo' : set(),
     'tzcode' : set(['tzdata']),
 }
