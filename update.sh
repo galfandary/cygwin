@@ -32,5 +32,6 @@ while [[ ${1:0:1} == - ]]; do
     fi
 done
 echo "Updating setup ..."
-cp -p $ini $tmp.old
+[[ -s $ini ]] && cp -p $ini $tmp.old
+mkdir -p $(dirname $ini)
 cp -p $tmp $ini
