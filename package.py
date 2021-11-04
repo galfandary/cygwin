@@ -166,7 +166,6 @@ if __name__ == '__main__':
     from argparse import ArgumentParser as Parser
     parser = Parser(description='Cygwin Package Manager')
     a = parser.add_argument
-    a('cmd',type=str,help='Command')
     a('pkg',type=str,help='Packages',nargs='*')
     a('-i','--ini',type=str,help='Setup File',
       default='/etc/setup/setup.ini')
