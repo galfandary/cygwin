@@ -68,6 +68,8 @@ DEP_BUG = {
     'perl_base' : set(['libcrypt2']),
     'python38-pip' : set(),
     'python38-setuptools' : set(),
+    'python39-pip' : set(),
+    'python39-setuptools' : set(),
     'terminfo' : set(),
     'tzcode' : set(['tzdata']),
 }
