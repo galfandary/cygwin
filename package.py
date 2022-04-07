@@ -141,6 +141,10 @@ def do_install(args):
         print(line)
     return 0
 
+PROVIDES_BUG = set((
+    'emacs-bin',
+))
+
 def provides(pkgs):
     for p,a in pkgs.items():
         m = {}
@@ -151,9 +155,12 @@ def provides(pkgs):
             v[d.ver] = d
         n = len(m)
         if n != 1:
-            e = 'More then one' if n > 1 else 'No'
-            eprint('%s provider for: %s'%(e,p))
-            return -1
+            if n < 1 or p not in PROVIDES_BUG:
+                e = 'More then one' if n > 1 else 'No'
+                eprint('%s provider for: %s'%(e,p))
+                for d in sorted(m.keys()):
+                    eprint(d)
+            if n < 1: return -1
         v = sorted(v.items())
         d = v[-1][1]
         ST.pkg[p] = d
